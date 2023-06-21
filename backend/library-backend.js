@@ -138,7 +138,7 @@ const resolvers = {
         if(!args.author){
             return books.length;
         }else{
-            const newBooks = books.filter(b => b.author === args.author);
+            const newBooks = books.filter(b => b.author === root.author);
             return newBooks.length;
         }
     },
