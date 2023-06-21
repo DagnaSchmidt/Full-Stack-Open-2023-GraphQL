@@ -1,5 +1,8 @@
 import { ApolloServer } from '@apollo/server';
 import { startStandaloneServer } from '@apollo/server/standalone';
+import { uid } from 'uid';
+
+const newId = uid();
 
 let authors = [
   {
@@ -10,7 +13,7 @@ let authors = [
   {
     name: 'Martin Fowler',
     id: "afa5b6f0-344d-11e9-a414-719c6709cf3e",
-    born: 1963
+    born: 1963,
   },
   {
     name: 'Fyodor Dostoevsky',
@@ -86,15 +89,12 @@ let books = [
   },
 ]
 
-
-//   you can remove the placeholder query once your first own has been implemented 
-
-
 const typeDefs = `
     type Author {
         name: String!
         id: String!
-        born: Int!
+        born: Int
+        bookCount(author: String): Int
     }
 
     type Book {
@@ -106,15 +106,81 @@ const typeDefs = `
     }
 
     type Query {
-        bookCount: Int!
+        bookCount(author: String): Int!
         authorCount: Int!
-  }
+        allBooks(author: String): [Book!]!
+        allAuthors: [Author!]!
+    }
+
+    type Mutation {
+        addBook(
+            title: String!
+            published: Int!
+            author: String!
+            genres: [String!]!
+        ): Book!
+
+        addAuthor(
+            name: String!
+            born: Int
+        ): Author
+
+        editAuthor(
+            name: String!
+            born: Int!
+        ): Author
+    }
 `
 
 const resolvers = {
   Query: {
-    bookCount: () => books.length,
-    authorCount: () => authors.length
+    bookCount: (root, args) => {
+        if(!args.author){
+            return books.length;
+        }else{
+            const newBooks = books.filter(b => b.author === args.author);
+            return newBooks.length;
+        }
+    },
+    authorCount: () => authors.length,
+    allBooks: (root, args) => {
+        if(!args.author){
+            return books;
+        }else{
+            const newBooks = books.filter(b => b.author === args.author);
+            return newBooks
+        }
+    },
+    allAuthors: () => authors
+  },
+
+  Mutation: {
+    addBook: (root, args) => {
+        if(!books.find(b => b.author === args.author)){
+            const newAuthor = {name: args.author, id: newId};
+            authors = authors.concat(newAuthor);
+        }
+        const book = {...args, id: newId};
+        books = books.concat(book);
+        return book;
+    },
+
+    addAuthor: (root, args) => {
+        const newAuthor = {...args, id: newId};
+        authors = authors.concat(newAuthor);
+        return newAuthor;
+    },
+
+    editAuthor: (root, args) => {
+        const author = authors.find(a => a.name === args.name);
+        if(!author){
+            return null;
+        }
+        const updatedAuthor = {...author, born: args.born};
+        authors = authors.map(a => a.name === args.name ? updatedAuthor : a);
+        return updatedAuthor;
+    }
+
   }
 }
 
