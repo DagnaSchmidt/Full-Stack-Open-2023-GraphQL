@@ -1,5 +1,8 @@
 import { ApolloServer } from '@apollo/server';
 import { startStandaloneServer } from '@apollo/server/standalone';
+import { uid } from 'uid';
+
+const newId = uid();
 
 let authors = [
   {
@@ -10,7 +13,7 @@ let authors = [
   {
     name: 'Martin Fowler',
     id: "afa5b6f0-344d-11e9-a414-719c6709cf3e",
-    born: 1963
+    born: 1963,
   },
   {
     name: 'Fyodor Dostoevsky',
@@ -27,19 +30,12 @@ let authors = [
   },
 ]
 
-/*
- * Suomi:
- * Saattaisi olla järkevämpää assosioida kirja ja sen tekijä tallettamalla kirjan yhteyteen tekijän nimen sijaan tekijän id
- * Yksinkertaisuuden vuoksi tallennamme kuitenkin kirjan yhteyteen tekijän nimen
- *
- * English:
- * It might make more sense to associate a book with its author by storing the author's id in the context of the book instead of the author's name
- * However, for simplicity, we will store the author's name in connection with the book
- *
- * Spanish:
- * Podría tener más sentido asociar un libro con su autor almacenando la id del autor en el contexto del libro en lugar del nombre del autor
- * Sin embargo, por simplicidad, almacenaremos el nombre del autor en conección con el libro
-*/
+
+//   English:
+//   It might make more sense to associate a book with its author by storing the author's 
+//   id in the context of the book instead of the author's name
+//   However, for simplicity, we will store the author's name in connection with the book
+
 
 let books = [
   {
@@ -93,19 +89,101 @@ let books = [
   },
 ]
 
-/*
-  you can remove the placeholder query once your first own has been implemented 
-*/
-
 const typeDefs = `
-  type Query {
-    dummy: Int
-  }
+    type Author {
+        name: String!
+        id: String!
+        born: Int
+        bookCount(author: String): Int
+    }
+
+    type Book {
+        title: String!
+        published: Int!
+        author: String!
+        id: String!
+        genres: [String!]!
+    }
+
+    type Query {
+        bookCount(author: String): Int!
+        authorCount: Int!
+        allBooks(author: String, genre: String): [Book!]!
+        allAuthors: [Author!]!
+    }
+
+    type Mutation {
+        addBook(
+            title: String!
+            published: Int!
+            author: String!
+            genres: [String!]!
+        ): Book!
+
+        addAuthor(
+            name: String!
+            born: Int
+        ): Author
+
+        editAuthor(
+            name: String!
+            born: Int!
+        ): Author
+    }
 `
 
 const resolvers = {
   Query: {
-    dummy: () => 0
+    bookCount: (root, args) => {
+        if(!args.author){
+            return books.length;
+        }else{
+            const newBooks = books.filter(b => b.author === root.author);
+            return newBooks.length;
+        }
+    },
+    authorCount: () => authors.length,
+    allBooks: (root, args) => {
+        if(!args.author && !args.genre){
+            return books;
+        }else if(args.author){
+            const newBooks = books.filter(b => b.author === args.author);
+            return newBooks;
+        }else if(args.genre){
+            const newBooks = books.filter(b => b.genres.includes(args.genre) && b);
+            return newBooks;
+        }
+    },
+    allAuthors: () => authors
+  },
+
+  Mutation: {
+    addBook: (root, args) => {
+        if(!books.find(b => b.author === args.author)){
+            const newAuthor = {name: args.author, id: newId};
+            authors = authors.concat(newAuthor);
+        }
+        const book = {...args, id: newId};
+        books = books.concat(book);
+        return book;
+    },
+
+    addAuthor: (root, args) => {
+        const newAuthor = {...args, id: newId};
+        authors = authors.concat(newAuthor);
+        return newAuthor;
+    },
+
+    editAuthor: (root, args) => {
+        const author = authors.find(a => a.name === args.name);
+        if(!author){
+            return null;
+        }
+        const updatedAuthor = {...author, born: args.born};
+        authors = authors.map(a => a.name === args.name ? updatedAuthor : a);
+        return updatedAuthor;
+    }
+
   }
 }
 
