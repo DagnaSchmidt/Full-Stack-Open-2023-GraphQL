@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { EDIT_AUTHOR, ALL_BOOKS, ALL_PERSONS } from '../queries';
+import { EDIT_AUTHOR, ALL_BOOKS, ALL_AUTHORS } from '../queries';
 import { useMutation } from '@apollo/client';
 
 const SetBirthYear = () => {
     const [name, setName] = useState('');
     const [born, setBorn] = useState('');
 
-    const [editAuthor] = useMutation(EDIT_AUTHOR, {refetchQueries: [{query: ALL_PERSONS}, {query: ALL_BOOKS}]});
+    const [editAuthor] = useMutation(EDIT_AUTHOR, {refetchQueries: [{query: ALL_AUTHORS}, {query: ALL_BOOKS}]});
 
     const handleSubmit = (e) => {
         e.preventDefault();
