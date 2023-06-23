@@ -28,15 +28,7 @@ let authors = [
     name: 'Sandi Metz', // birthyear not known
     id: "afa5b6f3-344d-11e9-a414-719c6709cf3e",
   },
-]
-
-
-//   English:
-//   It might make more sense to associate a book with its author by storing the author's 
-//   id in the context of the book instead of the author's name
-//   However, for simplicity, we will store the author's name in connection with the book
-
-
+];
 let books = [
   {
     title: 'Clean Code',
@@ -133,6 +125,13 @@ const typeDefs = `
 `
 
 const resolvers = {
+  Author: {
+    bookCount: (root, args) => {
+      const newBooks = books.filter(b => b.author === root.name);
+      return newBooks.length;
+    }
+  },
+
   Query: {
     bookCount: (root, args) => {
         if(!args.author){
@@ -185,15 +184,15 @@ const resolvers = {
     }
 
   }
-}
+};
 
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-})
+});
 
 startStandaloneServer(server, {
   listen: { port: 4000 },
 }).then(({ url }) => {
   console.log(`Server ready at ${url}`)
-})
+});
