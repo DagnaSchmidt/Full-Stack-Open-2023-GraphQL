@@ -1,10 +1,11 @@
 import { useQuery } from "@apollo/client";
 
 import { ALL_PERSONS } from "../queries";
+import SetBirthYear from "./SetBirthYear";
 
 
 const Authors = (props) => {
-  const result = useQuery(ALL_PERSONS);  
+  const result = useQuery(ALL_PERSONS);
 
     if(result.loading){
       return (
@@ -33,6 +34,7 @@ const Authors = (props) => {
             ))}
           </tbody>
         </table>
+        <SetBirthYear />
       </div>
     )
   }
