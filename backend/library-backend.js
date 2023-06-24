@@ -179,7 +179,7 @@ const resolvers = {
                 throw new GraphQLError('Saving book hhhh failed', {
                   extensions: {
                     code: 'BAD_USER_INPUT',
-                    invalidArgs: args.name,
+                    invalidArgs: args.authorName,
                     error
                   }
                 })
@@ -193,7 +193,7 @@ const resolvers = {
             throw new GraphQLError('Saving book failed', {
               extensions: {
                 code: 'BAD_USER_INPUT',
-                invalidArgs: args.name,
+                invalidArgs: args.authorName,
                 error
               }
             })
