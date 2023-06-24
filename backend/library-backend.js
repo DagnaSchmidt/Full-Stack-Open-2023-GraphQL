@@ -5,6 +5,8 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import { Author } from './models/author.js';
 import { Book } from './models/book.js';
+import jwt from "jsonwebtoken";
+import { User } from './models/user.js';
 
 dotenv.config();
 
@@ -98,17 +100,27 @@ mongoose.connect(MONGODB_URI)
 const typeDefs = `
     type Author {
         name: String!
-        id: ID!
         born: Int
         bookCount(author: String): Int
+        id: ID!
     }
 
     type Book {
         title: String!
         published: Int!
         author: Author!
-        id: ID!
         genres: [String!]!
+        id: ID!
+    }
+
+    type User {
+      username: String!
+      favoriteGenre: String!
+      id: ID!
+    }
+
+    type Token {
+      value: String!
     }
 
     type Query {
@@ -116,6 +128,7 @@ const typeDefs = `
         authorCount: Int!
         allBooks(author: String, genre: String): [Book!]!
         allAuthors: [Author!]!
+        me: User
     }
 
     type Mutation {
@@ -135,6 +148,16 @@ const typeDefs = `
             name: String!
             born: Int!
         ): Author
+
+        createUser(
+          username: String!
+          favoriteGenre: String!
+        ): User
+
+        login(
+          username: String!
+          password: String!
+        ): Token
     }
 `
 
@@ -165,7 +188,6 @@ const resolvers = {
   Mutation: {
     addBook: async (root, args) => {
       const author = await Author.findOne({name: args.authorName});
-
       const newBook2 = new Book({title: args.title, published: args.published, genres: args.genres, author: author});
 
         if(!author){
@@ -210,6 +232,40 @@ const resolvers = {
     editAuthor: (root, args) => {
         const newAuthor = Author.findOneAndUpdate({name: args.name, born: args.born});
         return newAuthor;
+    },
+
+    createUser: async (root, args) => {
+      const user = new User({username: args.username, favoriteGenre: args.favoriteGenre});
+
+      return user.save()
+        .catch(error => {
+          throw new GraphQLError('Creating the user failed', {
+            extensions: {
+              code: 'BAD_USER_INPUT',
+              invalidArgs: args.name,
+              error
+            }
+          })
+        })
+    },
+
+    login: async (root, args) => {
+      const user = await User.findOne({username: args.username});
+
+      if ( !user || args.password !== 'secret' ) {
+        throw new GraphQLError('wrong credentials', {
+          extensions: {
+            code: 'BAD_USER_INPUT'
+          }
+        })        
+      }
+  
+      const userForToken = {
+        username: user.username,
+        id: user._id,
+      }
+  
+      return {value: jwt.sign(userForToken, process.env.JWT_SECRET)}
     }
 
   }
