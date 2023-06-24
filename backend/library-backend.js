@@ -182,13 +182,27 @@ const resolvers = {
         }
     },
 
-    allAuthors: async () => Author.find({})
+    allAuthors: async () => Author.find({}),
+
+    me: (root, args, context) => {
+      return context.currentUser;
+    }
   },
 
   Mutation: {
-    addBook: async (root, args) => {
+    addBook: async (root, args, context) => {
+      const currentUser = context.currentUser;
       const author = await Author.findOne({name: args.authorName});
       const newBook2 = new Book({title: args.title, published: args.published, genres: args.genres, author: author});
+
+
+        if(!currentUser){
+          throw new GraphQLError('not authenticated', {
+            extensions: {
+              code: 'BAD_USER_INPUT',
+            }
+          });
+        }
 
         if(!author){
           const newAuthor = new Author({name: args.authorName});
@@ -229,8 +243,16 @@ const resolvers = {
         return newAuthor.save();
     },
 
-    editAuthor: (root, args) => {
-        const newAuthor = Author.findOneAndUpdate({name: args.name, born: args.born});
+    editAuthor: (root, args, context) => {
+        const currentUser = context.currentUser;
+        if(!currentUser){
+          throw new GraphQLError('not authenticated', {
+            extensions: {
+              code: 'BAD_USER_INPUT',
+            }
+          });
+        }
+        const newAuthor = Author.findOneAndUpdate({name: args.name}, {born: args.born});
         return newAuthor;
     },
 
@@ -278,6 +300,14 @@ const server = new ApolloServer({
 
 startStandaloneServer(server, {
   listen: { port: 4000 },
+  context: async ({req, res}) => {
+    const auth = req ? req.headers.authorization : null;
+    if(auth && auth.startsWith('Bearer ')){
+      const decodedToken = jwt.verify(auth.substring(7), process.env.JWT_SECRET);
+      const currentUser = await User.findById(decodedToken.id);
+      return {currentUser};
+    }
+  }
 }).then(({ url }) => {
   console.log(`Server ready at ${url}`)
 });
