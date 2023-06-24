@@ -155,7 +155,7 @@ const resolvers = {
         }else if(args.author){
             return Book.find({author: args.author});
         }else if(args.genre){
-            return Book.find({genre: { "instock": args.genre}});
+            return Book.find({"genres": args.genre});
         }
     },
 
