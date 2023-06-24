@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { EDIT_AUTHOR, ALL_BOOKS, ALL_AUTHORS } from '../queries';
 import { useMutation, useQuery } from '@apollo/client';
 
-const SetBirthYear = () => {
+const SetBirthYear = ({showError}) => {
     const allAuthors = useQuery(ALL_AUTHORS);
 
     const [name, setName] = useState('');
     const [born, setBorn] = useState('');
 
-    const [editAuthor] = useMutation(EDIT_AUTHOR, {refetchQueries: [{query: ALL_AUTHORS}, {query: ALL_BOOKS}]});
+    const [editAuthor, result] = useMutation(EDIT_AUTHOR, {refetchQueries: [{query: ALL_AUTHORS}, {query: ALL_BOOKS}]});
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -16,6 +16,12 @@ const SetBirthYear = () => {
         setName('');
         setBorn('');
     }
+
+    useEffect(() => {
+        if(result.data === null){
+            showError('person not found');
+        }
+    },[result.data]); // eslint-disable-line 
 
 
     if(allAuthors.loading){

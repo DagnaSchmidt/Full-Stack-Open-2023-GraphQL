@@ -16,11 +16,9 @@ const bookSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Author'
     },
-    genres: [
-        {type: String}
-    ]
-})
+    genres: [String]
+});
 
-schema.plugin(mongooseUniqueValidator);
+bookSchema.plugin(mongooseUniqueValidator);
 
 export const Book = mongoose.model('Book', bookSchema);

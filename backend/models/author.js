@@ -8,19 +8,11 @@ const authorSchema = new mongoose.Schema({
         minLength: 4,
         unique: true
     },
-    published: {
-        type: Number,
-        required: true
-    },
-    author: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Author'
-    },
     born: {
         type: Number
     }
 })
 
-schema.plugin(mongooseUniqueValidator);
+authorSchema.plugin(mongooseUniqueValidator);
 
 export const Author = mongoose.model('Author', authorSchema);

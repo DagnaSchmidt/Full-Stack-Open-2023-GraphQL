@@ -6,6 +6,7 @@ import SetBirthYear from "./SetBirthYear";
 
 const Authors = (props) => {
   const result = useQuery(ALL_AUTHORS);
+  console.log(result);
 
     if(result.loading){
       return (
@@ -34,7 +35,7 @@ const Authors = (props) => {
             ))}
           </tbody>
         </table>
-        <SetBirthYear />
+        <SetBirthYear showError={props.showError} />
       </div>
     )
   }
