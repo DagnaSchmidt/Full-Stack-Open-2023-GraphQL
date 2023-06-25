@@ -9,9 +9,13 @@ const pubsub = new PubSub();
 
 export const resolvers = {
     Author: {
-      bookCount: async (root, args) => {
-        const result = await Book.count({author: root.name});
-        return null; //
+      bookCount: async (root) => {
+        const books = await Book.find({author: {$in: [root._id]}})
+        return books.length;
+      }, 
+      books: async (root) => {
+        const books = await Book.find({author: {$in: [root._id]}})
+        return books;
       }
     },
   

@@ -2,8 +2,9 @@ export const typeDefs = `
     type Author {
         name: String!
         born: Int
-        bookCount(author: String): Int
+        bookCount: Int
         id: ID!
+        books: [Book]
     }
 
     type Book {
