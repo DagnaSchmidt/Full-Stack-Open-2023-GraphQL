@@ -4,7 +4,7 @@ import { ADD_BOOK, ALL_BOOKS, ALL_AUTHORS } from '../queries';
 
 const NewBook = (props) => {
   const [title, setTitle] = useState('')
-  const [author, setAuthor] = useState('')
+  const [authorName, setAuthorName] = useState('')
   const [published, setPublished] = useState('');
   const [genre, setGenre] = useState('')
   const [genres, setGenres] = useState([])
@@ -12,18 +12,18 @@ const NewBook = (props) => {
   const [createBook] = useMutation(ADD_BOOK, {
     refetchQueries: [{query: ALL_AUTHORS}, {query: ALL_BOOKS}],
     onError: (error) => {
-      const errors = error.graphQLErrors[0].extensions.error.errors
-      const messages = Object.values(errors).map(e => e.message).join('\n')
+      const errors = error.graphQLErrors[0].extensions.error.errors;
+      const messages = Object.values(errors).map(e => e.message).join('\n');
       props.showError(messages);
     }
   });
 
   const submit = async (event) => {
     event.preventDefault();
-    createBook({ variables: { title, author, published: Number(published), genres}});
+    createBook({ variables: { title, authorName, published: Number(published), genres}});
     setTitle('');
     setPublished('');
-    setAuthor('');
+    setAuthorName('');
     setGenres([]);
     setGenre('');
   }
@@ -50,8 +50,8 @@ const NewBook = (props) => {
         <div>
           author
           <input
-            value={author}
-            onChange={({ target }) => setAuthor(target.value)}
+            value={authorName}
+            onChange={({ target }) => setAuthorName(target.value)}
           />
         </div>
         <div>

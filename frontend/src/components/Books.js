@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 
 const Books = (props) => {
   const [list, setList] = useState([]);
-  console.log(list);
   const result = useQuery(ALL_BOOKS);
   const allGenres = useQuery(ALL_GENRES);
 
