@@ -8,10 +8,16 @@ export const ALL_AUTHORS = gql`
             id
         }
     }
-    `
-export const ALL_BOOKS = gql`
+`
+
+export const ALL_GENRES = gql`
     query {
-        allBooks {
+        allGenres
+    }
+`
+export const ALL_BOOKS = gql`
+    query allBooks($genre: String) {
+        allBooks(genre: $genre) {
             title,
             published,
             id,
