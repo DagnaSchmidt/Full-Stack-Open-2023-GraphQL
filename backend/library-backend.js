@@ -163,8 +163,9 @@ const typeDefs = `
 
 const resolvers = {
   Author: {
-    bookCount: (root, args) => {
-      return Book.find({author: root.name}).length;
+    bookCount: async (root, args) => {
+      const result = await Book.count({author: root.name});
+      return null; //
     }
   },
 
@@ -174,15 +175,15 @@ const resolvers = {
 
     allBooks: async (root, args) => {
         if(!args.author && !args.genre){
-            return Book.find({});
+            return await Book.find({}).populate('author', {name: 1, born: 1, id: 1});
         }else if(args.author){
-            return Book.find({author: args.author});
+            return await Book.find({author: args.author}).populate('author', {name: 1, born: 1, id: 1});
         }else if(args.genre){
-            return Book.find({"genres": args.genre});
+            return await Book.find({"genres": args.genre}).populate('author', {name: 1, born: 1, id: 1});
         }
     },
 
-    allAuthors: async () => Author.find({}),
+    allAuthors: async () => await Author.find({}),
 
     me: (root, args, context) => {
       return context.currentUser;
@@ -195,11 +196,10 @@ const resolvers = {
       const author = await Author.findOne({name: args.authorName});
       const newBook2 = new Book({title: args.title, published: args.published, genres: args.genres, author: author});
 
-
         if(!currentUser){
           throw new GraphQLError('not authenticated', {
             extensions: {
-              code: 'BAD_USER_INPUT',
+              code: 'BAD_USER_INPUT'
             }
           });
         }
